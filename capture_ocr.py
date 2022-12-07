@@ -1,24 +1,25 @@
-import cv2
+import cv2 as cv
 import pytesseract
 from PIL import Image
-from pytesseract import image_to_string
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-NA = ['NA']
-
-def video_cap():
-    # Use the attached camera to capture images
-    # 0 stands for the first one
-    return_list = []
-    cap= cv2.VideoCapture(0, cv2.CAP_DSHOW)
+def capture_from_image():
+    cap = cv.VideoCapture(0)
     while cap.isOpened():
-        ret, frame = cap.read()
-        img1 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        cv2.imshow('Neuropathic View', img1)
+        ret, frame = cap.read()
+
+        gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+   
+        cap.release()
+        cv.destroyAllWindows()
+        return gray
+
+def capture_decoder():
+    searching_for_text = True
+    while searching_for_text:
+        img1 = capture_from_image()
         text = pytesseract.image_to_string(Image.fromarray(img1))
-        if cv2.waitKey(0) & 0xFF == ord('q'):
-            return None
+
         split_txt = text.split("\n")
         matchespi = [match for match in split_txt if "PI" in match]
         matchesvf = [match for match in split_txt if "TAMV" in match]
@@ -44,7 +45,5 @@ def video_cap():
         else:
             print("no data found")
 
-    cap.release()
-
 if __name__ == "__main__":
-    video_cap()
+    capture_decoder()

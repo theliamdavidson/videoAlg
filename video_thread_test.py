@@ -4,15 +4,22 @@ import concurrent.futures
 import random
 import logging
 import vessel_math as vm
+import video
 
 artery_num = 0
 message_list = []
 len_list = []
 
-def cam_cap(queue, event):
+def cam_listener(queue, event):
     """Pretend we're getting a number from the network."""
     while not event.is_set():
+        screen_capture = threading.Thread(target=video.video_cap)
         message = random.randint(10, 99)
+        for i in range(len(screen_capture)):
+            try:
+                float(screen_capture[i])
+            except:
+                print(screen_capture[i])
         queue.put(message, "Camera")
 
 def alg_store(queue, event):
@@ -43,7 +50,7 @@ if __name__ == "__main__":
     pipeline = queue.Queue(maxsize=10)
     event = threading.Event()
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        executor.submit(cam_cap, pipeline, event)
+        executor.submit(cam_listener, pipeline, event)
         executor.submit(alg_store, pipeline, event)
 
     logging.info("done")
