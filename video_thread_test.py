@@ -10,11 +10,14 @@ message_list = []
 len_list = []
 
 def cam_listener(queue, event):
-    """Pretend we're getting a number from the network."""
+    """
+        Creates a watchdog thread that captures data from the ultrasound,
+        and sends it to the algorithm thread via the queue
+    """
     while not event.is_set():
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(capture_ocr.capture_decoder)
-            return_value = future.result()
+            ocr_thread = executor.submit(capture_ocr.capture_decoder)
+            return_value = ocr_thread.result()
         thread_return = str(return_value).split(",")
         #logging.info("cam_listener is active")
         return_string = ""
@@ -33,7 +36,10 @@ def cam_listener(queue, event):
             queue.put( return_float, "Camera")
 
 def alg_store(queue, event):
-    """Pretend we're saving a number in the database."""
+    """
+        takes the information captured by the ocr thread, 
+        and runs it through Dr. Busell's algorithm
+    """
     while not event.is_set() or not queue.empty():
         message = queue.get()
         if len(message_list) < 5:
