@@ -4,7 +4,7 @@ import concurrent.futures
 import random
 import logging
 import vessel_math as vm
-import video
+import capture_ocr
 
 artery_num = 0
 message_list = []
@@ -13,14 +13,25 @@ len_list = []
 def cam_listener(queue, event):
     """Pretend we're getting a number from the network."""
     while not event.is_set():
-        screen_capture = threading.Thread(target=video.video_cap)
-        message = random.randint(10, 99)
-        for i in range(len(screen_capture)):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(capture_ocr.capture_decoder)
+            return_value = future.result()
+        thread_return = str(return_value).split(",")
+        #logging.info("cam_listener is active")
+        return_string = ""
+        #logging.info("recieved from thread: %s",thread_return)
+        for i in range(len(thread_return)):
             try:
-                float(screen_capture[i])
+                return_float = float(thread_return[i])
+                logging.info("recieved from thread: %f",return_float)
+                found = True
+                
             except:
-                print(screen_capture[i])
-        queue.put(message, "Camera")
+                if thread_return[i] == ".":
+                    return_string += thread_return[i]
+
+        if found == True:            
+            queue.put( return_float, "Camera")
 
 def alg_store(queue, event):
     """Pretend we're saving a number in the database."""
@@ -28,10 +39,12 @@ def alg_store(queue, event):
         message = queue.get()
         if len(message_list) < 5:
             message_list.append(message)
+            #logging.info("alg_store is active: %f", message)
         else:
-            if len(len_list) == 50:
+            #logging.info("alg_store is active")
+            if len(len_list) == 51:
                 event.set()
-            logging.info("run through the ligorithm: %s",message_list)
+            logging.info("run through the algorithm: %s",message_list)
             algThread = threading.Thread(target=patient_instance.converter, args=(message_list,))
             algThread.start()
             algThread.join()

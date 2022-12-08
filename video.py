@@ -21,9 +21,11 @@ def video_cap():
             return None
         split_txt = text.split("\n")
         matchespi = [match for match in split_txt if "PI" in match]
-        matchesvf = [match for match in split_txt if "TAMV" in match]
+        matchesvf = [match for match in split_txt if "Vol Flow" in match]
+        matchestamv = [match for match in split_txt if "TAMV" in match]
         array_lengthpi = len(matchespi)
         array_lengthvf = len(matchesvf)
+        array_lengthtamv = len(matchestamv)
 
         if array_lengthpi != 0:
 
@@ -40,7 +42,13 @@ def video_cap():
                 print(matchesvf)
                 print("sent vf to alg: ", matchesvf)
                 return(matchesvf)
+        elif array_lengthtamv != 0:
 
+            for i in range(array_lengthtamv):
+                matchestamv[i] = ",".join( matchestamv[i].split() )
+                print(matchesvf)
+                print("sent vf to alg: ", matchestamv)
+                return(matchestamv)
         else:
             print("no data found")
 
