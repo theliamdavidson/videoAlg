@@ -1,7 +1,6 @@
 import threading
 import queue
 import concurrent.futures
-import random
 import logging
 import vessel_math as vm
 import capture_ocr
